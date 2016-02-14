@@ -1,0 +1,19 @@
+{
+  "name": "perf-sym",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "bin": "./cmd.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "David Mark Clements",
+  "license": "GPL-2.0",
+  "dependencies": {
+    "end-of-stream": "^1.1.0",
+    "minimist": "^1.2.0",
+    "pump": "^1.0.1",
+    "resolve-jit-symbols": "^0.5.0",
+    "split2": "^2.0.1"
+  }
+}
