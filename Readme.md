@@ -79,3 +79,17 @@ cat stacks.out | perf-sym -r initial --no-sys $PID | stackvis perf > flamegraph.
 
 open flamegraph.html
 ```
+
+## Contributors
+
+* David Mark Clements
+* Matteo Collina
+
+## Acknowledgements
+
+* sponsored by nearForm
+* with thanks to [thlorenz](https://github.com/thlorenz) and his [cpuprofilify](https://github.com/thlorenz/cpuprofilify) module for inspiration and snippets
+
+## License
+
+MIT
