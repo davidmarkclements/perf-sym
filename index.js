@@ -18,7 +18,7 @@ module.exports = function resolveSymbols(opts) {
         opts.relative || opts.r || process.cwd() :
     false
 
-  if (notFound(mapFile)) return
+  if (notFound(mapFile, opts)) return
 
   var map = fs.readFileSync(mapFile, 'utf8')
   var resolver = resolveJITSymbols(map)
@@ -26,61 +26,72 @@ module.exports = function resolveSymbols(opts) {
   var errors = 0
   var found = 0
 
-  pump(
-    process.stdin,
-    split(function(line) {
-      var match
-      var res
-      var p
+  var stream = split(function(line) {
+    var match
+    var res
+    var p
 
-      if (!(match = line.match(hexRx))) {
-        errors++
+    if (!(match = line.match(hexRx))) {
+      errors++
 
-        return line + '\n'
-      }
-        
-      if (res = resolver.resolve(match[1])) {
-        found++
-        line = line
-          .replace(hexRx, (keepAddr ? '$1 ' : '') + res.symbol)
-          .replace(optRx, '~*')
-          .replace(frameRx, '$1')
+      return line + '\n'
+    }
+      
+    if (res = resolver.resolve(match[1])) {
+      found++
+      line = line
+        .replace(hexRx, (keepAddr ? '$1 ' : '') + res.symbol)
+        .replace(optRx, '~*')
+        .replace(frameRx, '$1')
 
-        if (relative) {
-          p = line.trim().split(' ').slice(1).join(' ')
-          if (p && (p[0] === '/' || p[0] === '.')) {
-            line = line.replace(p, path.relative(relative, p))
-          }
+      if (relative) {
+        p = line.trim().split(' ').slice(1).join(' ')
+        if (p && (p[0] === '/' || p[0] === '.')) {
+          line = line.replace(p, path.relative(relative, p))
         }
-
-        return internal(line, opts.internal) ? '' : line + '\n'
       }
 
-    }),
-    process.stdout
-  )
+      return internal(line, opts.internal) ? '' : line + '\n'
+    }
 
-
-  eos(process.stdin, function () {
-    process.stdout.write('\n\n') //<-- important final line
-
-    console.error('symbols found', found)
-    console.error('symbols not found', errors)
-    console.error('done')
   })
+
+  stream.on('pipe', function (src) {
+    if (!opts.silent) {
+      eos(src, function () {
+        console.error('symbols found', found)
+        console.error('symbols not found', errors)
+        console.error('done')
+      })
+    }
+
+    stream.pipe = (function (pipe) {
+      return function (dest) {
+        eos(src, function () {
+          dest.write('\n\n') //<-- important final line
+        })
+        return pipe.apply(stream, arguments)
+      }
+
+    }(stream.pipe))
+  })
+
+  return stream
 
 }
 
-function notFound(file) {
+function notFound(file, opts) {
   if (!fs.existsSync(file)|| !fs.statSync(file).size) {
-    console.error([
-      ,
-      'There should be a ' + file + ' file (with a size greater than zero)',
-      'It\'s either not there or it\'s empty, make sure you ran your process with',
-      '--perf-basic-prof, and make sure to clean up when process receives a SIGINT',
-      'see the on-sigint and close-server-on-sigint modules for example',
-      ,
-    ].join('\n'))
+    if (!opts.silent) {
+      console.error([
+        ,
+        'There should be a ' + file + ' file (with a size greater than zero)',
+        'It\'s either not there or it\'s empty, make sure you ran your process with',
+        '--perf-basic-prof, and make sure to clean up when process receives a SIGINT',
+        'see the on-sigint and close-server-on-sigint modules for example',
+        ,
+      ].join('\n'))
+    }
     return true
   }
 }

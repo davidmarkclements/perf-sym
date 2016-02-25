@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 var args = require('minimist')(process.argv.slice(2))
-
+var pump = require('pump')
 /*
   cat stacks.out | perf-sym <pid>
 
@@ -13,7 +13,7 @@ var args = require('minimist')(process.argv.slice(2))
   --no-unresolved --no-ur [false]
  */
 
-require('./')(Object.assign(args, {
+var stream = require('./')(Object.assign(args, {
   pid: args._[0],
   internal: {
     v8: 'v8' in args ? !args.v8 : true,
@@ -29,3 +29,5 @@ require('./')(Object.assign(args, {
     ur: ['unresolved']
   }
 })
+
+pump(process.stdin, stream, process.stdout)
