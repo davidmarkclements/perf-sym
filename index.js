@@ -4,10 +4,7 @@ var eos = require('end-of-stream')
 var split = require('split2')
 var path = require('path')
 var resolveJITSymbols = require('resolve-jit-symbols')
-var internal = require('./is-internal')
 var hexRx = /(0x[0-9A-Fa-f]{2,12})/
-var frameRx = /^\w+\s+(?:LazyCompile:|Function:|Script:){0,1}(.+?)\W\(\S+\)$/
-var optRx = /^\W*[*~]/
 
 module.exports = function resolveSymbols(opts) {
   var mapFile = '/tmp/perf-' + opts.pid + '.map'
@@ -41,8 +38,6 @@ module.exports = function resolveSymbols(opts) {
       found++
       line = line
         .replace(hexRx, (keepAddr ? '$1 ' : '') + res.symbol)
-        .replace(optRx, '~*')
-        .replace(frameRx, '$1')
 
       if (relative) {
         p = line.trim().split(' ').slice(1).join(' ')
@@ -51,7 +46,7 @@ module.exports = function resolveSymbols(opts) {
         }
       }
 
-      return internal(line, opts.internal) ? '' : line + '\n'
+      return line + '\n'
     }
 
   })
