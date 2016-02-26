@@ -16,11 +16,6 @@ __You can use this tool to generate Flamegraphs on OSX and Linux__.
 
   --relative=[path] -r=[path] [false]
   --keep-addr -k [false]
-  --no-v8-internals --no-v8 [true]
-  --no-sys-internals --no-sys [false]
-  --no-gc-internals --no-gc [false] (--no-v8 must be false to apply)
-  --no-unresolved --no-ur [false]
-
 ```
 
 
@@ -72,13 +67,13 @@ In another terminal, run a load/soak test:
 wrk -c 100 -d 10 http://localhost:3000
 ```
 
-When the load/soak test is finished, hit `CRL-C` in the terminal running
+When the load/soak test is finished, hit `CTRL-C` in the terminal running
 your application.
 
 now run:
 
 ```
-cat stacks.out | perf-sym --no-sys YOURPID | stackvis perf > flamegraph.html
+cat stacks.out | perf-sym YOURPID | stackvis perf > flamegraph.html
 open flamegraph.html
 ```
 
@@ -110,7 +105,7 @@ your application.
 now run:
 
 ```
-cat stacks.out | perf-sym --no-sys YOURPID | stackvis perf > flamegraph.html
+cat stacks.out | perf-sym YOURPID | stackvis perf > flamegraph.html
 
 open flamegraph.html
 ```
