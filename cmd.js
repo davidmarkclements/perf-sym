@@ -18,6 +18,4 @@ var stream = require('./')(Object.assign(args, {
   pid: args._[0]
 }))
 
-console.log(stream)
-
 pump(process.stdin, stream, process.stdout)
